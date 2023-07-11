@@ -6,3 +6,6 @@ __pycache__/
 # Flask stuff:
 instance/
 .webassets-cache
+
+# Debugging
+output_image.jpg
