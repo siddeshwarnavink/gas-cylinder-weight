@@ -49,11 +49,14 @@ numbers=[]
 
 while(angle<360):
     cursorImg=cursorRotateImg(cursor,image,angle)
-    cv2.imshow('Cursor Preview',cursorImg)
-    cv2.waitKey(0)
+    # cv2.imshow('Cursor Preview',cursorImg)
+    # cv2.waitKey(0)
     numFromImg=recognizedNumberFromImg(cursorImg)
     if(numFromImg):
         numbers.append(numFromImg)
     angle+=CURSOR_ROTATE_BY
 cv2.destroyAllWindows()
-print(numbers)
+cropped_numbers=[num for num in numbers if 100 <= num <= 200]
+avg_number=sum(cropped_numbers) / len(cropped_numbers)
+final_weight=avg_number/10
+print(f'Weight: {final_weight}kg')
