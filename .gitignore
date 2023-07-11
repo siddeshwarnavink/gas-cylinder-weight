@@ -8,4 +8,5 @@ instance/
 .webassets-cache
 
 # Debugging
+output_images/
 output_image.jpg
