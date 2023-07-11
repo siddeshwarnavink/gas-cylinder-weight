@@ -1,3 +1,8 @@
+'''
+Solution #2
+Using a algorithm to detect the numbers and process is using ML
+'''
+
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np

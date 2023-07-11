@@ -1,3 +1,8 @@
+'''
+Solution #1
+Using a rotating cursor find out the number. 
+'''
+
 from sys import exit
 
 import cv2
