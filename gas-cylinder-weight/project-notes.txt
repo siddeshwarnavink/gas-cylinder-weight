@@ -1,0 +1,17 @@
+Assumptions:
+1. All images from the camera are the same dimensions & ratio.
+2. Considering only household cylinder.
+3. All text height are the same.
+
+What we need to do: Get the weight of the cylinder.
+
+Idea #1 - Colour crop:
+1. Get all white colour from the image
+2. identity the text using rotation algorithm.
+
+Idea #2 - Circular crop
+1. turn the image into a circle.
+[loop start]
+2. scan around the circumfarance of the circle with a cursor of height=height of text
+3. crop down the image to height of the text.
+[loop end]
