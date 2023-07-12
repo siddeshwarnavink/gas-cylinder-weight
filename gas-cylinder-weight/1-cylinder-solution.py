@@ -2,6 +2,8 @@
 Solution #1
 Using a rotating cursor find out the number. 
 '''
+import os
+
 import cv2
 import pytesseract
 
@@ -27,6 +29,8 @@ def cursorRotateImg(c,img,angle):
     return cropped_image
 
 def recognizedNumberFromImg(img):
+    if os.name=='nt':
+        pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
     recognized_text=pytesseract.image_to_string(img,config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
     if(recognized_text!=None):
         recognized_text=str(recognized_text).strip()
