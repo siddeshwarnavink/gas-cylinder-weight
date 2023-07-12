@@ -9,7 +9,6 @@ import shared
 
 loadedImage=cv2.imread('./images/Cylinder_image.jpg')
 image=shared.getMonochromeImage(img=loadedImage)
-imgHeight,imgWidth=image.shape[:2]
 
 '''
 Cursor
@@ -20,10 +19,11 @@ CURSOR_WIDTH=500
 CURSOR_HEIGHT=300
 CURSOR_ROTATE_BY=5
 
-def cursorRotateImg(img,angle):
+def cursorRotateImg(c,img,angle):
+    imgHeight,imgWidth=img.shape[:2]
     rotation_matrix=cv2.getRotationMatrix2D((imgWidth/2,imgHeight/2),angle,1)
     rotated_image=cv2.warpAffine(img,rotation_matrix,(imgWidth,imgHeight))
-    cropped_image=rotated_image[cursor['yPos']:cursor['yPos']+cursor['height'],cursor['xPos']:cursor['xPos']+cursor['width']]
+    cropped_image=rotated_image[c['yPos']:c['yPos']+c['height'],c['xPos']:c['xPos']+c['width']]
     return cropped_image
 
 def recognizedNumberFromImg(img):
@@ -44,9 +44,9 @@ angle=0
 numbers=[]
 
 while(angle<360):
-    cursorImg=cursorRotateImg(image,angle)
-    # cv2.imshow('Cursor Preview',cursorImg)
-    # cv2.waitKey(0)
+    cursorImg=cursorRotateImg(cursor,image,angle)
+    cv2.imshow('Cursor Preview',cursorImg)
+    cv2.waitKey(0)
     numFromImg=recognizedNumberFromImg(cursorImg)
     if(numFromImg):
         numbers.append(numFromImg)
