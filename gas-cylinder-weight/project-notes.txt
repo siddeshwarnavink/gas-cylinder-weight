@@ -15,3 +15,8 @@ Idea #2 - Circular crop
 2. scan around the circumfarance of the circle with a cursor of height=height of text
 3. crop down the image to height of the text.
 [loop end]
+
+
+[Testing]
+1. pre - optimized runtime - 19.2 seconds
+2. current-optimized runtime - 2.7 seconds
