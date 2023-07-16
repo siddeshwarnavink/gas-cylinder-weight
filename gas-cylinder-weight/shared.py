@@ -1,7 +1,6 @@
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
-import pytesseract
 
 def getMonochromeImage(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
