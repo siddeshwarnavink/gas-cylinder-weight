@@ -75,7 +75,6 @@ def getNearbyContours(image,posList,contours):
 
                 if distance<=max_distance:
                     filtered_contours.append({'pos':(x,y),'cnt': cnt})
-                    cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
 
     return filtered_contours
 
@@ -139,7 +138,6 @@ def getRotationImages(img):
         M=cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
         rotated_image_copy=cv2.warpAffine(img,M,(cols,rows))
         angle+=110
-        cv2.rectangle(rotated_image_copy,(450,1000),(900,1350),(0, 255, 0),2)
         cropped_number=rotated_image_copy[1000:1350,450:900]
         cropped_number_image.append(cropped_number)
     return cropped_number_image
@@ -167,7 +165,7 @@ def preditNumberPredictions(images_list):
         number=remove_special_characters_and_letters(recognized_text)
         if number==''or float(number)<20:
             actual_number='Error'
-        elif float(number) < 100:
+        elif float(number)<100:
             actual_number=float(number)/10+10
 
         else:
