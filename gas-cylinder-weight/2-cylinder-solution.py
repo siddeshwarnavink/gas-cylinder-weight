@@ -4,6 +4,7 @@ Using a algorithm to detect the numbers. And process them with OCR
 '''
 import sys
 import re
+import time
 
 import cv2
 import numpy as np
@@ -14,17 +15,19 @@ from shared import getMonochromeImage
 if sys.platform=='win32':
     pytesseract.pytesseract.tesseract_cmd=r'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
-def getCroppedImage(image):
+startTime=time.time()
+
+def getInitialCroppedImage(image):
     image_height,image_width,_=image.shape
-    crop_width = 1400
-    crop_height = 1400
+    crop_width=1400
+    crop_height=1400
 
     x1=int(image_width/2-crop_width/2)
     y1=int(image_height/2-crop_height/2)
     x2=int(image_width/2+crop_width/2)
     y2=int(image_height/2+crop_height/2)
 
-    cropped_image=image[y1:y2, x1:x2]
+    cropped_image=image[y1:y2,x1:x2]
     return cropped_image
 
 def getContours(image):
@@ -34,7 +37,7 @@ def getContours(image):
 
 loadedImage=cv2.imread('./images/Cylinder_image.jpg')
 image=getMonochromeImage(loadedImage)
-cropped_image=getCroppedImage(image)
+cropped_image=getInitialCroppedImage(image)
 originalImage=cropped_image.copy()
 
 def getNumberPos(image):
@@ -47,10 +50,10 @@ def getNumberPos(image):
 
         if (
             area>1000
-            and 1<w/h< 1.2
+            and 1<w/h<1.2
             and h>200 and h<=300
         ):
-            number_positions.append({'pos':(x,y),'cnt': contour})
+            number_positions.append({'pos':(x,y),'cnt':contour})
             cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
     return number_positions
 
@@ -64,7 +67,7 @@ def getNearbyContours(image,posList,contours):
             area=cv2.contourArea(cnt)
             x,y,w,h=cv2.boundingRect(cnt)
 
-            if area > 1000:
+            if area>1000:
                 M=cv2.moments(cnt)
                 cx=int(M['m10']/M['m00'])
                 cy=int(M['m01']/M['m00'])
@@ -77,24 +80,24 @@ def getNearbyContours(image,posList,contours):
     return filtered_contours
 
 number_positions=getNumberPos(cropped_image)
-nearby_contours=getNearbyContours(cropped_image, number_positions, getContours(cropped_image))
+nearby_contours=getNearbyContours(cropped_image,number_positions,getContours(cropped_image))
 
-def filterNumberImages(number_positions, nearby_contours):
-    img_counter=0        
+def filterNumberImages(img,number_positions,nearby_contours):
+    img_counter=0
     extract_images=[]
 
     def findAngle(x,y,w,h):
         rect_center_x=x+w//2
         rect_center_y=y+h//2
-        img_center_x=cropped_image.shape[1]//2
-        img_center_y=cropped_image.shape[0]//2
+        img_center_x=img.shape[1]//2
+        img_center_y=img.shape[0]//2
         ref_point_x=img_center_x
         ref_point_y=rect_center_y
-        distance_yellow_to_orange=np.sqrt((ref_point_x - img_center_x)**2+(ref_point_y-img_center_y)**2)
-        distance_red_to_orange=np.sqrt((ref_point_x - rect_center_x)**2+(ref_point_y-rect_center_y)**2)
+        distance_yellow_to_orange=np.sqrt((ref_point_x-img_center_x)**2+(ref_point_y-img_center_y)**2)
+        distance_red_to_orange=np.sqrt((ref_point_x-rect_center_x)**2+(ref_point_y-rect_center_y)**2)
         radians=np.arctan(distance_red_to_orange/distance_yellow_to_orange)
         angle=np.degrees(radians)
-        return angle    
+        return angle
     
     def check_contour_overlap(contour1, contour2):
         x1,y1,w1,h1=cv2.boundingRect(contour1)
@@ -115,18 +118,18 @@ def filterNumberImages(number_positions, nearby_contours):
             if(check_contour_overlap(parentCntData['cnt'],childCntData['cnt'])):
                 img_counter+=1
                 x,y,w,h=cv2.boundingRect(parentCntData['cnt'])
-                if x<800 and y>800 :
+                if x<800 and y>800:
                     global originalImage
                     angle=findAngle(x,y,w,h)
                     rows,cols=cropped_image.shape[:2]
                     M=cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
                     originalImage=cv2.warpAffine(originalImage,M,(cols,rows))
                     break
-                extract_image=originalImage[y:y+h, x:x+w]
+                extract_image=originalImage[y:y+h,x:x+w]
                 extract_images.append(extract_image)
     return extract_images
 
-extract_images=filterNumberImages(cropped_image, number_positions, nearby_contours)
+extract_images=filterNumberImages(cropped_image,number_positions,nearby_contours)
 
 def getRotationImages(img):
     angle=0
@@ -147,7 +150,7 @@ def preditNumberPredictions(images_list):
     numbers_predicted=[]
 
     def remove_special_characters_and_letters(input_string):
-        cleaned_string=re.sub('[^0-9]', '', input_string)
+        cleaned_string=re.sub('[^0-9]','',input_string)
         return cleaned_string
 
     for img in images_list:
@@ -155,16 +158,16 @@ def preditNumberPredictions(images_list):
         img_array=np.array(cv2.cvtColor(resize_img,cv2.COLOR_RGB2GRAY))
         for rows in range(len(img_array[0])):
             for cols in range(len(img_array)):
-                if img_array[rows][cols]<100 :
+                if img_array[rows][cols]<100:
                     img_array[rows][cols]=255
                 else:
                     img_array[rows][cols]=0
         white_img=cv2.cvtColor(img_array,cv2.COLOR_GRAY2RGB)
         recognized_text=pytesseract.image_to_string(white_img,config='--psm 11 --oem 3 ')
         number=remove_special_characters_and_letters(recognized_text)
-        if number==''or float(number)<20 :
+        if number==''or float(number)<20:
             actual_number='Error'
-        elif float(number) < 100 :
+        elif float(number) < 100:
             actual_number=float(number)/10+10
 
         else:
@@ -174,3 +177,6 @@ def preditNumberPredictions(images_list):
 
 number_predictions=preditNumberPredictions(cropped_number_image)
 print(number_predictions)
+endTime=time.time()
+timeTaken=round(((endTime-startTime)*10**3)/1000,2)
+print(f'Elapsed: {timeTaken}s')
