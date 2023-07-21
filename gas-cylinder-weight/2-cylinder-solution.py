@@ -17,6 +17,32 @@ if sys.platform=='win32':
 
 startTime=time.time()
 
+def getWeightPrediction(images):
+    predictions=[]
+
+    def sortedKeysToNumber(keys):
+        if len(keys)!=3: return -1.0
+        number=float(f'{keys[0]}{keys[1]}.{keys[2]}')
+        return number
+
+    for img in images:
+        test_array=[1,3,5]
+        location_dictionary={}
+        for number in test_array :
+            template=cv2.imread(f'./images/template/{number}.jpg')
+            method=cv2.TM_CCOEFF_NORMED
+            result=cv2.matchTemplate(img,template,method)
+            threshold=0.6
+            best_match=np.max(result)
+            if best_match>=threshold:
+                min_val,max_val,min_loc,max_loc=cv2.minMaxLoc(result)
+                top_left=max_loc
+                x_location=top_left[0]
+                location_dictionary[f'{number}']=x_location
+        sorted_keys = [k for k, v in sorted(location_dictionary.items(), key=lambda item: item[1])]
+        predictions.append(sortedKeysToNumber(sorted_keys))
+    return predictions
+
 def getInitialCroppedImage(image):
     image_height,image_width,_=image.shape
     crop_width=1400
@@ -173,8 +199,10 @@ def preditNumberPredictions(images_list):
         numbers_predicted.append(actual_number)
     return numbers_predicted
 
-number_predictions=preditNumberPredictions(cropped_number_image)
-print(number_predictions)
+# number_predictions=preditNumberPredictions(cropped_number_image)
+# print(number_predictions)
+weight_predictions=getWeightPrediction(cropped_number_image)
+print(weight_predictions)
 endTime=time.time()
 timeTaken=round(((endTime-startTime)*10**3)/1000,2)
 print(f'Elapsed: {timeTaken}s')
